@@ -1,0 +1,6 @@
+@SerilogAspNetDemo_HostAddress = http://localhost:5211
+
+GET {{SerilogAspNetDemo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
