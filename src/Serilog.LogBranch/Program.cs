@@ -1,5 +1,7 @@
 using Serilog.Events;
 using Serilog;
+using Serilog.LogBranch.Extensions;
+using Serilog.Formatting.Compact;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -22,17 +24,22 @@ try {
         .ReadFrom.Configuration(context.Configuration)  //從設定檔中讀取
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
+        .Enrich.With(new LogEnricher())
         .WriteTo.Console()
         .WriteTo.File("logs/All-.log",
             rollingInterval: RollingInterval.Hour,
             retainedFileCountLimit: 720)
         .WriteTo.Logger(lc => lc.Filter.ByIncludingOnly(e =>
-            e.Properties["SourceContext"].ToString().Contains("Controller"))
+            e.Properties["ControllerName"].ToString().Contains("Controller"))
             .WriteTo.File("logs/api-.log",
             rollingInterval: RollingInterval.Hour,
             retainedFileCountLimit: 720,
-            outputTemplate:"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
-        )
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {ControllerName} {Message:lj}{NewLine}{Exception}"))
+        .WriteTo.Logger(lc=>lc.Filter.ByExcluding(e=>
+            e.Properties["SourceContext"].ToString().Contains("Controller"))
+            .WriteTo.File("logs/server-.log",
+            rollingInterval:RollingInterval.Hour,
+            retainedFileCountLimit: 720))
     );
 
     var app = builder.Build();
