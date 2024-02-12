@@ -3,6 +3,7 @@
 bin/
 obj/
 src/SerilogAspNetDemo/logs
+src/Serilog.LogBranch/logs
 
 #Vue-Cli
 .DS_Store
