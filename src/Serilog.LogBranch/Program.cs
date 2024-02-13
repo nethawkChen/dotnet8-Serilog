@@ -20,26 +20,23 @@ try {
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    var setting = builder.Configuration;
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)  //從設定檔中讀取
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .Enrich.With(new LogEnricher())
-        .WriteTo.Console()
-        .WriteTo.File("logs/All-.log",
-            rollingInterval: RollingInterval.Hour,
-            retainedFileCountLimit: 720)
         .WriteTo.Logger(lc => lc.Filter.ByIncludingOnly(e =>
             e.Properties["ControllerName"].ToString().Contains("Controller"))
-            .WriteTo.File("logs/api-.log",
-            rollingInterval: RollingInterval.Hour,
-            retainedFileCountLimit: 720,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {ControllerName} {Message:lj}{NewLine}{Exception}"))
+            .WriteTo.File(setting["Serilog:WriteTo:2:Args:Path"],
+            rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:2:Args:rollingInterval"]),
+            retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:2:Args:retainedFileCountLimit"]),
+            outputTemplate: setting["Serilog:WriteTo:2:Args:outputTemplate"]))
         .WriteTo.Logger(lc=>lc.Filter.ByExcluding(e=>
             e.Properties["SourceContext"].ToString().Contains("Controller"))
-            .WriteTo.File("logs/server-.log",
-            rollingInterval:RollingInterval.Hour,
-            retainedFileCountLimit: 720))
+            .WriteTo.File(setting["Serilog:WriteTo:3:Args:Path"],
+            rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:3:Args:rollingInterval"]),
+            retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:3:Args:retainedFileCountLimit"])))
     );
 
     var app = builder.Build();
