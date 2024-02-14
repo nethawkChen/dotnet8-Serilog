@@ -29,14 +29,19 @@ try {
         .WriteTo.Logger(lc => lc.Filter.ByIncludingOnly(e =>
             e.Properties["ControllerName"].ToString().Contains("Controller"))
             .WriteTo.File(setting["Serilog:WriteTo:2:Args:Path"],
-            rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:2:Args:rollingInterval"]),
-            retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:2:Args:retainedFileCountLimit"]),
-            outputTemplate: setting["Serilog:WriteTo:2:Args:outputTemplate"]))
+                rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:2:Args:rollingInterval"]),
+                retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:2:Args:retainedFileCountLimit"]),
+                outputTemplate: setting["Serilog:WriteTo:2:Args:outputTemplate"]))
         .WriteTo.Logger(lc=>lc.Filter.ByExcluding(e=>
             e.Properties["SourceContext"].ToString().Contains("Controller"))
             .WriteTo.File(setting["Serilog:WriteTo:3:Args:Path"],
-            rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:3:Args:rollingInterval"]),
-            retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:3:Args:retainedFileCountLimit"])))
+                rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:3:Args:rollingInterval"]),
+                retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:3:Args:retainedFileCountLimit"])))
+        .WriteTo.Logger(lc => lc.Filter.ByIncludingOnly(e =>
+            e.Properties["SourceContext"].ToString().Contains("Controller"))
+            .WriteTo.File(new CompactJsonFormatter(), setting["Serilog:WriteTo:5:Args:Path"],
+                rollingInterval: Enum.Parse<RollingInterval>(setting["Serilog:WriteTo:5:Args:rollingInterval"]),
+                retainedFileCountLimit: int.Parse(setting["Serilog:WriteTo:5:Args:retainedFileCountLimit"])))
     );
 
     var app = builder.Build();
